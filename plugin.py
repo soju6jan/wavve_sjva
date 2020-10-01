@@ -23,7 +23,7 @@ logger = get_logger(package_name)
 
 # 패키지
 import framework.wavve.api as Wavve
-from .model import ModelSetting
+from .model import ModelSetting, ModelWavveProgram
 from .logic import Logic
 from .logic_recent import LogicRecent
 from .logic_program import LogicProgram, WavveProgramEntity
@@ -135,6 +135,13 @@ def second_menu(sub, sub2):
             try:
                 setting_list = db.session.query(ModelSetting).all()
                 arg = Util.db_list_to_dict(setting_list)
+                return render_template('%s_%s_%s.html' % (package_name, sub, sub2), arg=arg)
+            except Exception as e: 
+                logger.error('Exception:%s', e)
+                logger.error(traceback.format_exc())
+        elif sub2 == 'queue':
+            try:
+                arg = {}
                 return render_template('%s_%s_%s.html' % (package_name, sub, sub2), arg=arg)
             except Exception as e: 
                 logger.error('Exception:%s', e)
@@ -310,6 +317,15 @@ def ajax(sub):
             except Exception as e: 
                 logger.error('Exception:%s', e)
                 logger.error(traceback.format_exc())
+        ### edit by lapis
+        elif sub == 'program_list_command':
+            try:
+                ret = LogicProgram.program_list_command(request)
+                return jsonify(ret)
+            except Exception as e: 
+                logger.error('Exception:%s', e)
+                logger.error(traceback.format_exc())
+        ###
     except Exception as e: 
         logger.error('Exception:%s', e)
         logger.error(traceback.format_exc())
@@ -320,6 +336,7 @@ def ajax(sub):
 #    if sub == 'chunklist.m3u8':
 
 
+### program queue
 sid_list = []
 @socketio.on('connect', namespace='/%s' % package_name)
 def connect():
@@ -346,6 +363,7 @@ def disconnect():
     except Exception as e: 
         logger.error('Exception:%s', e)
         logger.error(traceback.format_exc())
+
 
 def socketio_callback(cmd, data):
     if sid_list:

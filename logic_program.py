@@ -21,7 +21,7 @@ from framework.util import Util
 # 패키지
 import plugin
 from .plugin import package_name, logger
-from .model import ModelSetting
+from .model import ModelSetting, ModelWavveProgram
 import framework.wavve.api as Wavve
 
 #########################################################
@@ -41,10 +41,15 @@ class WavveProgramEntity(object):
         self.ffmpeg_status_kor = u'대기중'
         self.ffmpeg_percent = 0
         self.created_time = datetime.now().strftime('%m-%d %H:%M:%S')
+        self.completed_time = '01-01 00:00:00' # for db
+        self.completed = False     # for db
         self.json_data = None
         self.ffmpeg_arg = None
         self.cancel = False
         WavveProgramEntity.entity_list.append(self)
+    
+    def __getitem__(self, key):
+        return getattr(self, key)
 
     @staticmethod
     def get_entity(entity_id):
@@ -85,6 +90,18 @@ class LogicProgram(object):
         try:
             episode_code = req.form['code']
             quality = req.form['quality']
+
+            ### edit by lapis
+            ### check if item is in db
+            if req.form['pass'] == 'false' and ModelWavveProgram.is_duplicate(episode_code, quality):
+                return 'already'
+            ###
+            ModelWavveProgram.append({
+                "episode_code": episode_code,
+                "quality": quality
+            })
+            ###
+
             LogicProgram.download_program2(episode_code, quality)
             return 'success'
         except Exception as e: 
@@ -98,6 +115,11 @@ class LogicProgram(object):
             LogicProgram.start()
             entity = WavveProgramEntity(episode_code, quality)
             entity.json_data = Wavve.vod_contents_contentid(episode_code)
+
+            ### edit by lapis
+            ModelWavveProgram.update(entity)
+            ###
+
             #entity.json_data['filename'] = Wavve.get_filename(entity.json_data, quality)
             LogicProgram.download_queue.put(entity)
         except Exception as e: 
@@ -119,7 +141,7 @@ class LogicProgram(object):
                 # 초기화
                 if entity is None:
                     return
-                
+
                 contenttype = 'onairvod' if entity.json_data['type'] == 'onair' else 'vod'
                 count = 0
                 while True:
@@ -157,11 +179,18 @@ class LogicProgram(object):
                         os.makedirs(save_path)
                 except:
                     logger.debug('program path make fail!!')
+                
+                ### edit by lapis
+                ModelWavveProgram.update(entity)
+                ###
 
                 # 파일 존재여부 체크
                 if os.path.exists(os.path.join(save_path, entity.json_data['filename'])):
                     entity.ffmpeg_status_kor = '파일 있음'
                     entity.ffmpeg_percent = 100
+                    ### edit by lapis
+                    ModelWavveProgram.delete(entity.episode_code, entity.quality)
+                    ###
                     plugin.socketio_list_refresh()
                     continue
 
@@ -169,7 +198,7 @@ class LogicProgram(object):
                 f = ffmpeg.Ffmpeg(tmp, entity.json_data['filename'], plugin_id=entity.entity_id, listener=LogicProgram.ffmpeg_listener, max_pf_count=max_pf_count, call_plugin='wavve_program', save_path=save_path)
                 f.start()
                 LogicProgram.current_ffmpeg_count += 1
-                LogicProgram.download_queue.task_done()    
+                LogicProgram.download_queue.task_done()                
 
             except Exception as e: 
                 logger.error('Exception:%s', e)
@@ -205,6 +234,15 @@ class LogicProgram(object):
         entity.ffmpeg_status_kor = str(arg['status'])
         entity.ffmpeg_percent = arg['data']['percent']
 
+        ### edit by lapis
+        if entity.ffmpeg_status == 7 or \
+           entity.ffmpeg_percent == 100 or \
+           entity.ffmpeg_status_kor in ['완료']:
+                entity.completed = True
+                entity.completed_time = datetime.now().strftime('%m-%d %H:%M:%S')
+                ModelWavveProgram.update(entity)
+        ###
+
         import plugin
         arg['status'] = str(arg['status'])
         plugin.socketio_callback('status', arg)
@@ -234,6 +272,10 @@ class LogicProgram(object):
                     ffmpeg.Ffmpeg.stop_by_idx(idx)
                     #plugin.socketio_list_refresh()
                     ret['ret'] = 'refresh'
+                
+                ### edit by lapis
+                ModelWavveProgram.delete(entity.episode_code, entity.quality)
+                ### 
             elif command == 'reset':
                 if LogicProgram.download_queue is not None:
                     with LogicProgram.download_queue.mutex:
@@ -256,6 +298,8 @@ class LogicProgram(object):
                 WavveProgramEntity.entity_list = new_list
                 plugin.socketio_list_refresh()
                 ret['ret'] = 'refresh'
+
+            
             
         except Exception as e: 
             logger.error('Exception:%s', e)
@@ -264,6 +308,32 @@ class LogicProgram(object):
             ret['log'] = str(e)
         return ret
 
+    ### edit by lapis
+    @staticmethod
+    def program_list_command(req):
+        try:
+            from flask_socketio import SocketIO, emit, send
+            
+            logger.debug('command :%s', req)
+
+            ret = {}
+
+            if req.form['cmd'] == 'remove_completed':
+                ModelWavveProgram.remove_completed()
+            elif req.form['cmd'] == 'remove_one':
+                episode_code, quality = req.form['val'].split(',')
+                ModelWavveProgram.delete(episode_code, quality)
+
+            ret = ModelWavveProgram.filelist(req)
+            ret['ret'] = 'refresh'
+        except Exception as e: 
+            logger.error('Exception:%s', e)
+            logger.error(traceback.format_exc())
+            ret = {}
+            ret['ret'] = 'notify'
+            ret['log'] = str(e)
+        return ret
+    ###
 
     @staticmethod
     def download_program_check(req):
@@ -287,3 +357,13 @@ class LogicProgram(object):
             ret['ret'] = 'fail'
             ret['log'] = str(e)
         return ret
+
+    ### edit by lapis
+    @staticmethod
+    def retry_download_failed():
+        failed_list = ModelWavveProgram.get_failed()
+        for item in failed_list:
+            episode_code = item.episode_code
+            quality = item.quality
+            LogicProgram.download_program2(episode_code, quality)
+    ### 

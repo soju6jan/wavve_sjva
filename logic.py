@@ -26,6 +26,9 @@ import ffmpeg
 from .model import ModelSetting
 from .logic_basic import LogicBasic
 from .logic_recent import LogicRecent
+### edit by lapis
+from .logic_program import LogicProgram
+###
 
 #########################################################
         
@@ -66,6 +69,7 @@ class Logic(object):
         'program_auto_make_folder' : 'True', 
         'program_auto_count_ffmpeg' : '4',
         'program_auto_quality' : '1080p', 
+        'program_auto_download_failed': 'True', # edit by lapis
 
         'qvod_check_quality' : 'False'
         
@@ -93,6 +97,11 @@ class Logic(object):
 
             if ModelSetting.get('auto_start') == 'True':
                 Logic.scheduler_start()
+            
+            ### edit by lapis
+            if ModelSetting.get('program_auto_download_failed') == 'True':
+                LogicProgram.retry_download_failed()
+            ###
 
             # 편의를 위해 json 파일 생성
             from plugin import plugin_info

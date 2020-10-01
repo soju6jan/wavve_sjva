@@ -10,6 +10,7 @@
 <ul class="nav nav-pills bg-light shadow text-dark" >
   <li class="nav-item"><a class="nav-link" href="/wavve/program/setting">설정</a></li>
   <li class="nav-item"><a class="nav-link active" href="/wavve/program/select">선택</a></li>
+  <li class="nav-item"><a class="nav-link" href="/wavve/program/queue">큐</a></li>
   <li class="nav-item"><a class="nav-link" href="/wavve/program/list">목록</a></li>
 </ul>
 <div class="d-inline-block"></div>
@@ -139,6 +140,11 @@ function make_program_page(ret) {
     tmp += `</select>&nbsp;&nbsp;&nbsp;&nbsp;`
     
     tmp += m_button('insert_download_btn', '다운로드 추가', [{'key':'code', 'value':data[i].contentid}])
+    
+    // edit by lapis
+    tmp += m_button('force_insert_download_btn', '다운로드 추가(db무시)', [{'key':'code', 'value':data[i].contentid}])
+    //
+    
     tmp += m_button('quality_list_btn', '지원 화질 확인', [{'key':'code', 'value':data[i].contentid}])
     tmp += '</div>'
 
@@ -226,21 +232,53 @@ $("body").on('click', '#insert_download_btn', function(e){
     url: '/' + package_name + '/ajax/download_program',
     type: "POST", 
     cache: false,
-    data: {code:code, quality:quality},
+    data: {code:code, quality:quality, pass:false}, // edit by lapis
     dataType: "json",
     success: function (data) {
-      if (data == 'success') {
+      if (data == 'success'){
         $.notify('<strong>다운로드를 추가 하였습니다.</strong>', {
           type: 'success'
         });
-      } else {
+      }else if(data == 'already'){
+        $.notify('<strong>이미 다운로드한 항목입니다.</strong>', {
+          type: 'warning'
+        });
+      }else if(data == 'fail'){
         $.notify('<strong>실패하였습니다.</strong>', {
           type: 'warning'
         });
       }
+
     }
   });
 });
+
+// edit by lapis
+$("body").on('click', '#force_insert_download_btn', function(e){
+  e.preventDefault();
+  code = $(this).data('code');
+  quality = document.getElementById('select|'+code).value
+  $.ajax({
+    url: '/' + package_name + '/ajax/download_program',
+    type: "POST", 
+    cache: false,
+    data: {code:code, quality:quality, pass:true},
+    dataType: "json",
+    success: function (data) {
+      if (data == 'success'){
+        $.notify('<strong>다운로드를 추가 하였습니다.</strong>', {
+          type: 'success'
+        });
+      }else if(data == 'fail'){
+        $.notify('<strong>실패하였습니다.</strong>', {
+          type: 'warning'
+        });
+      }
+
+    }
+  });
+});
+//
 
 
 $("body").on('click', '#check_download_btn', function(e){

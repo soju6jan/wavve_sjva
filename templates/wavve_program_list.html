@@ -3,140 +3,193 @@
 
 <ul class="nav nav-pills bg-light shadow text-dark" >
   <li class="nav-item"><a class="nav-link" href="/wavve/program/setting">설정</a></li>
-  <li class="nav-item"><a class="nav-link " href="/wavve/program/select">선택</a></li>
+  <li class="nav-item"><a class="nav-link" href="/wavve/program/select">선택</a></li>
+  <li class="nav-item"><a class="nav-link" href="/wavve/program/queue">큐</a></li>
   <li class="nav-item"><a class="nav-link active" href="/wavve/program/list">목록</a></li>
 </ul>
 <div class="d-inline-block"></div>
 
+ 
 <div>
-  {{ macros.m_button_group([['reset_btn', '초기화'], ['delete_completed_btn', '완료 목록 삭제'], ['go_ffmpeg_btn', 'Go FFMPEG']])}}
-
-  {{ macros.m_row_start('0') }}
-  {{ macros.m_row_end() }}
-
+  <form id="form_search" class="form-inline" style="text-align:left">
+    <div class="container-fluid">
+      <div class="row show-grid">
+        <span class="col-md-4">
+          <select id="order" name="order" class="form-control form-control-sm">
+            <option value="desc">최근순</option>
+            <option value="asc">오래된순</option>
+          </select>
+          <select id="option" name="option" class="form-control form-control-sm">
+            <option value="all">전체</option>
+            <option value="completed">완료</option>
+            <option value="failed">미완료</option>
+          </select>
+        </span>
+        <span class="col-md-8">
+          <input id="search_word" name="search_word" class="form-control form-control-sm w-50" type="text" placeholder="" aria-label="Search">
+          <button id="search" class="btn btn-sm btn-outline-success">검색</button>
+          <button id="db_remove_completed_btn" class="btn btn-sm btn-outline-success">완료항목제거</button>
+        </span>
+      </div>
+    </div>
+  </form>
+  <div id='page1'></div>
   {{ macros.m_hr_head_top() }}
   {{ macros.m_row_start('0') }}
-  {{ macros.m_col(1,  macros.m_strong('Idx')) }}
-  {{ macros.m_col(2,  macros.m_strong('CreatedTime')) }}
-  {{ macros.m_col(1,  macros.m_strong('Quality')) }}
-  {{ macros.m_col(4,  macros.m_strong('Title')) }}
-  {{ macros.m_col(3,  macros.m_strong('Status')) }}
-  {{ macros.m_col(1,  macros.m_strong('Action')) }}
+  {{ macros.m_col(2,  macros.m_strong('Idx')) }}
+  {{ macros.m_col(6,  macros.m_strong('Item')) }}
+  {{ macros.m_col(2,  macros.m_strong('Status')) }}
   {{ macros.m_row_end() }}
   {{ macros.m_hr_head_bottom() }}
-  <div id="download_list_div"></div>
-</div> <!--전체-->
-
+  <div id="list_div"></div>
+  <div id='page2'></div>
+</div>
 
 <script type="text/javascript">
-var package_name = 'wavve';
-var current_data = null;
+const package_name = "wavve";
+const suffix = "program";
+let current_data = null;
 
 $(document).ready(function(){
-  var protocol = window.location.protocol;
-  socket = io.connect(protocol + "//" + document.domain + ":" + location.port + "/" + package_name);
-
-  socket.on('on_connect', function(data){
-    if (data != null) {
-      on_start(data);
-    }
-  });
-
-  socket.on('status', function(data){
-    on_status(data)
-  });
-
-  socket.on('list_refresh', function(data){
-    on_start(data)
-  });
+  request_search(1);
 });
 
-function on_start(data) {
-  make_download_list(data)
-}
+$('body').on('click', '#search', (e) => {
+  e.preventDefault();
+  request_search(1, 'search');
+});
 
-function on_status(data) {
-  tmp = document.getElementById("progress_"+data.plugin_id)
-  if (tmp != null) {
-    document.getElementById("progress_"+data.plugin_id).style.width = data.data.percent+ '%';
-    document.getElementById("progress_"+data.plugin_id+"_label").innerHTML = data.status + "(" + data.data.percent + "%)";
+$('body').on('click', '#db_remove_completed_btn', (e) => {
+  e.preventDefault();
+  request_search(1, 'remove_completed');
+});
+
+
+$("body").on('click', '#page', function(e){
+  e.preventDefault();
+  request_search($(this).data('page'), 'search');
+});
+
+$('body').on('click', '#request_btn', (e) => {
+  e.preventDefault();
+  let prog_id = e.target.dataset.program_id;   
+  if (prog_id) {
+      window.location = `/wavve/program/select?code=${prog_id}`;
   }
+});
+
+$('body').on('click', '#remove_btn', (e) => {
+  e.preventDefault();
+  request_search(1, 'remove_one', e.target.dataset.episode_code);
+});
+
+
+$('body').on('mouseover', '.head_pic', (e)=>{
+  e.target.nextElementSibling.classList.remove('before');
+  e.target.nextElementSibling.classList.add('after');
+});
+
+$('body').on('mouseout', '.head_pic', (e)=>{
+  e.target.nextElementSibling.classList.remove('after');
+  e.target.nextElementSibling.classList.add('before');
+});
+
+
+const on_start = (data) => {
+  make_list(data);
+  make_page_html(1);
 }
 
-function make_download_list(data) {
-  str = '';
+
+const make_list = (data) => {
+  console.log(data)
+  let str = '';
+  let tmp = '';
   for (i in data) {
+    //console.log(data[i])
     str += m_row_start();
-    str += m_col(1, data[i].entity_id);
-    str += m_col(2, data[i].created_time);
-    
-    str += m_col(1, data[i].quality);
-    tmp = data[i].json_data.programtitle + ' '  + data[i].json_data.episodenumber + '회'
-    //if (data[i].json_data.filename != null)
-    //  tmp += '<br>' + data[i].json_data.filename
-    str += m_col(4, tmp);
+    str += m_col(1, data[i].id);
 
-    label = data[i].ffmpeg_status_kor
-    if (data[i].ffmpeg_percent != 0) {
-      label += '(' + data[i].ffmpeg_percent + '%)'
+    tmp = '';
+    if(data[i].programimage == null || data[i].programimage == undefined || data[i].programimage.length <= 0){
+      tmp = ''
+    }else{
+      tmp = `<div><img src="http://${data[i].programimage}" class="img-fluid thumbnail head_pic" >
+             <img src="http://${data[i].thumbnail}" class="img-fluid thumbnail before"></div>`
     }
-
-    tmp = m_progress('progress_'+data[i].entity_id, data[i].ffmpeg_percent,  label)
     str += m_col(3, tmp);
-    tmp = m_button('program_cancel_btn', '취소', [{'key':'id', 'value':data[i].entity_id}]);
-    tmp = m_button_group(tmp)
-    str += m_col(1, tmp)
+
+    tmp = '';
+    if(data[i].program_title == null || data[i].program_title == undefined || data[i].program_title.length <= 0){
+      tmp = data[i].episode_code;
+    }else{
+      tmp = `${data[i].program_title} - ${data[i].episode_number}`
+    }
+    str += m_col(3, `${tmp}<br>
+                     ${data[i].quality}<br><br>
+                     ${m_button('request_btn', '프로그램 검색', 
+                      [{'key':'program_id', 'value':data[i].program_id}])}
+                     ${m_button('remove_btn', '항목 삭제', 
+                      [{'key':'episode_code', 'value':data[i].episode_code+','+data[i].quality}])}
+                     `);
+
+    str += m_col(2, `${data[i].created_time.length > 0 ? data[i].created_time + ' (추가)' : ''}
+                     ${data[i].completed ? '<br>' + data[i].completed_time + ' (완료)' : '' }`);
     str += m_row_end();
-    if (i != data.length -1) str += m_hr(0);
+    if (i != data.length -1) str += m_hr();
   }
-  document.getElementById("download_list_div").innerHTML = str;
+  document.getElementById("list_div").innerHTML = str;
 }
 
 
-$("body").on('click', '#program_cancel_btn', function(e){
-  e.preventDefault();
-  entity_id = $(this).data('id')
-  send_data = {'command':'cancel', 'entity_id':entity_id}
-  program_auto_command(send_data)
-});
-
-$("body").on('click', '#reset_btn', function(e){
-  e.preventDefault();
-  entity_id = $(this).data('id')
-  send_data = {'command':'reset', 'entity_id':-1}
-  program_auto_command(send_data)
-});
-
-$("body").on('click', '#delete_completed_btn', function(e){
-  e.preventDefault();
-  entity_id = $(this).data('id')
-  send_data = {'command':'delete_completed', 'entity_id':-1}
-  program_auto_command(send_data)
-});
-
-
-function program_auto_command(data) {
+const request_search = (page=1, cmd='', val='') => {
+  let formData = get_formdata('#form_search')
+  formData += `&page=${page}&cmd=${cmd}&val=${val}`;
   $.ajax({
-    url: '/' + package_name + '/ajax/program_auto_command',
+    url: '/' + package_name + '/ajax/program_list_command',
     type: "POST", 
     cache: false,
-    data: data,
+    data: formData,
     dataType: "json",
-    success: function (ret) {
-      if (ret.ret == 'notify') {
+    success: function (data) {
+      if(data.ret == 'notify'){
         $.notify('<strong>'+ ret.log +'</strong>', {
           type: 'warning'
         });
+        return;
       }
+      current_data = data;
+      window.scrollTo(0,0);
+      make_list(data.list)
+      make_page_html(data.paging)
     }
   });
-}
+}  
 
-$("body").on('click', '#go_ffmpeg_btn', function(e){
-  e.preventDefault();
-  $(location).attr('href', '/ffmpeg')
-});
 
 
 </script>    
+
+<style>
+  .thumbnail{
+    height: 100px;
+    border: 1px solid gray;
+  }
+
+  .head_pic{
+    display: inline;
+  }
+
+  .before{
+    display: none;
+  }
+
+  .after{
+    position: absolute;
+    display: inline;
+    left: 150px;
+    top: 20px;
+    z-index: 1;
+  }
+</style>
 {% endblock %}
