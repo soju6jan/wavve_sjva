@@ -319,11 +319,15 @@ class LogicProgram(object):
             ret = {}
 
             if req.form['cmd'] == 'remove_completed':
-                ModelWavveProgram.remove_completed()
+                ModelWavveProgram.remove_all(True)
             elif req.form['cmd'] == 'remove_one':
                 episode_code, quality = req.form['val'].split(',')
                 ModelWavveProgram.delete(episode_code, quality)
-
+            elif req.form['cmd'] == 'add_incomplete':
+                LogicProgram.retry_download_failed()
+            elif req.form['cmd'] == 'remove_incomplete':
+                ModelWavveProgram.remove_all(False)
+        
             ret = ModelWavveProgram.filelist(req)
             ret['ret'] = 'refresh'
         except Exception as e: 

@@ -232,14 +232,14 @@ $("body").on('click', '#insert_download_btn', function(e){
     url: '/' + package_name + '/ajax/download_program',
     type: "POST", 
     cache: false,
-    data: {code:code, quality:quality, pass:false}, // edit by lapis
+    data: {code:code, quality:quality, pass:false}, // pass value - edit by lapis
     dataType: "json",
     success: function (data) {
       if (data == 'success'){
         $.notify('<strong>다운로드를 추가 하였습니다.</strong>', {
           type: 'success'
         });
-      }else if(data == 'already'){
+      }else if(data == 'already'){ // edit by lapis
         $.notify('<strong>이미 다운로드한 항목입니다.</strong>', {
           type: 'warning'
         });

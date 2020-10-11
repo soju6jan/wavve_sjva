@@ -310,9 +310,9 @@ class ModelWavveProgram(db.Model):
             return False
 
     @staticmethod
-    def remove_completed():
+    def remove_all(is_completed=True): # to remove_all(True/False)
         try:
-            db.session.query(ModelWavveProgram).filter_by(completed=True).delete()
+            db.session.query(ModelWavveProgram).filter_by(completed=is_completed).delete()
             db.session.commit()
             return True
         except Exception, e:
@@ -382,17 +382,24 @@ class ModelWavveProgram(db.Model):
             if search.find('|') != -1:
                 tmp = search.split('|')
                 conditions = []
+                conditions2 = []
                 for tt in tmp:
                     if tt != '':
                         conditions.append(ModelWavveProgram.program_title.like('%'+tt.strip()+'%') )
-                query = query.filter(or_(*conditions))
+                        conditions2.append(ModelWavveProgram.episode_number.like(tt.strip()))
+                query1 = query.filter(or_(*conditions))
+                query2 = query.filter(or_(*conditions2))
             elif search.find(',') != -1:
                 tmp = search.split(',')
                 for tt in tmp:
                     if tt != '':
-                        query = query.filter(ModelWavveProgram.program_title.like('%'+tt.strip()+'%'))
+                        query1 = query.filter(ModelWavveProgram.program_title.like('%'+tt.strip()+'%'))
+                        query2 = query.filter(ModelWavveProgram.episode_number.like(tt.strip()))
             else:
-                query = query.filter(ModelWavveProgram.program_title.like('%'+search+'%'))
+                query1 = query.filter(ModelWavveProgram.program_title.like('%'+search+'%'))
+                query2 = query.filter(ModelWavveProgram.episode_number.like(search))
+
+            query = query1.union(query2)
 
         if option == 'completed':
             query = query.filter(ModelWavveProgram.completed == True)

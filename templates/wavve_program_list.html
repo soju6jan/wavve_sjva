@@ -27,8 +27,13 @@
         </span>
         <span class="col-md-8">
           <input id="search_word" name="search_word" class="form-control form-control-sm w-50" type="text" placeholder="" aria-label="Search">
+          {{ macros.m_button_group([['search', '검색'], ['db_remove_completed_btn', '완료제거'], ['db_remove_incomplete', '미완료제거'], ['db_add_incomplete', '미완료추가']])}}
+          <!--
           <button id="search" class="btn btn-sm btn-outline-success">검색</button>
-          <button id="db_remove_completed_btn" class="btn btn-sm btn-outline-success">완료항목제거</button>
+          <button id="db_remove_completed_btn" class="btn btn-sm btn-outline-success">완료제거</button>
+          <button id="db_remove_incomplete" class="btn btn-sm btn-outline-success">미완료제거</button>
+          <button id="db_add_incomplete" class="btn btn-sm btn-outline-success">미완료추가</button>
+          -->
         </span>
       </div>
     </div>
@@ -62,6 +67,16 @@ $('body').on('click', '#search', (e) => {
 $('body').on('click', '#db_remove_completed_btn', (e) => {
   e.preventDefault();
   request_search(1, 'remove_completed');
+});
+
+$('body').on('click', '#db_add_incomplete', (e) => {
+  e.preventDefault();
+  request_search(1, 'add_incomplete');
+});
+
+$('body').on('click', '#db_remove_incomplete', (e) => {
+  e.preventDefault();
+  request_search(1, 'remove_incomplete');
 });
 
 
