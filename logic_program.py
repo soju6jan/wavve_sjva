@@ -5,7 +5,6 @@ import os
 import traceback
 from datetime import datetime
 import time
-import Queue
 import threading
 # third-party
 import requests
@@ -14,7 +13,7 @@ from sqlalchemy import desc, or_
 
 # sjva 공용
 from framework.logger import get_logger
-from framework import app, db, scheduler, path_data
+from framework import app, db, scheduler, path_data, py_queue
 from framework.job import Job
 from framework.util import Util
 
@@ -74,7 +73,7 @@ class LogicProgram(object):
     def start():
         try:
             if LogicProgram.download_queue is None:
-                LogicProgram.download_queue = Queue.Queue()
+                LogicProgram.download_queue = py_queue.Queue()
             
             if LogicProgram.download_thread is None:
                 LogicProgram.download_thread = threading.Thread(target=LogicProgram.download_thread_function, args=())

@@ -39,20 +39,20 @@ def plugin_unload():
 
 plugin_info = {
     'version' : '0.1.0.0',
-    'name' : '웨이브 다운로드',
+    'name' : u'웨이브 다운로드',
     'category_name' : 'vod',
     'icon' : '',
     'developer' : 'soju6jan',
-    'description' : '웨이브에서 VOD 다운로드',
+    'description' : u'웨이브에서 VOD 다운로드',
     'home' : 'https://github.com/soju6jan/wavve',
     'more' : '',
 }
 #########################################################
 
 menu = {
-    'main' : [package_name, '웨이브'],
+    'main' : [package_name, u'웨이브'],
     'sub' : [
-        ['basic', '기본'], ['recent', '최근방송 자동'], ['program', '프로그램별 자동'], ['log', '로그']
+        ['basic', u'기본'], ['recent', u'최근방송 자동'], ['program', u'프로그램별 자동'], ['log', u'로그']
     ]
 }   
 

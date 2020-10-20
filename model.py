@@ -304,7 +304,7 @@ class ModelWavveProgram(db.Model):
             else:
                 return False
             return True
-        except Exception, e:
+        except Exception as e:
             logger.error('Exception:%s', e)
             logger.error(traceback.format_exc())
             return False
@@ -315,7 +315,7 @@ class ModelWavveProgram(db.Model):
             db.session.query(ModelWavveProgram).filter_by(completed=is_completed).delete()
             db.session.commit()
             return True
-        except Exception, e:
+        except Exception as e:
             logger.error('Exception:%s', e)
             logger.error(traceback.format_exc())
             return False
@@ -370,7 +370,7 @@ class ModelWavveProgram(db.Model):
             ret['list'] = [item.as_dict() for item in lists]
             ret['paging'] = Util.get_paging_info(count, page, page_size)
             return ret
-        except Exception, e:
+        except Exception as e:
             logger.error('Exception:%s', e)
             logger.error(traceback.format_exc())
     
@@ -432,6 +432,6 @@ class ModelWavveProgram(db.Model):
             query = query.limit(count)
             lists = query.all()
             return lists
-        except Exception, e:
+        except Exception as e:
             logger.error('Exception:%s', e)
             logger.error(traceback.format_exc())

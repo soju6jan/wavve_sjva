@@ -19,7 +19,7 @@ from framework.logger import get_logger
 from framework.job import Job
 
 # 패키지
-from plugin import package_name, logger
+from .plugin import package_name, logger
 from .model import ModelSetting, ModelWavveEpisode
 import framework.wavve.api as Wavve
 
