@@ -145,14 +145,14 @@ class LogicProgram(object):
                 count = 0
                 while True:
                     count += 1
-                    streaming_data = Wavve.streaming(contenttype, entity.episode_code, entity.quality, ModelSetting.get('credential'))
+                    streaming_data = Wavve.streaming(contenttype, entity.episode_code, entity.quality)
                     try:
                         tmp = data2['playurl']
                     except:
                         try:
                             from .logic_basic import LogicBasic
                             LogicBasic.login()
-                            streaming_data = Wavve.streaming(contenttype, entity.episode_code, entity.quality, ModelSetting.get('credential'))
+                            streaming_data = Wavve.streaming(contenttype, entity.episode_code, entity.quality)
                         except:
                             pass
 

@@ -8,10 +8,6 @@
 
 <div>
   <form id="setting">
-    {{ macros.setting_input_text('id', 'ID', value=arg['id'], col='3') }}
-    <!--{{ macros.setting_input_text_and_buttons('pw', '암호', [['login', '확인']], value=arg['pw'], col='4', type='password') }}-->
-    {{ macros.setting_input_text('pw', '암호', value=arg['pw'], col='3', type='password') }}
-    <!--{{ macros.setting_button_with_info([['wavve_credential_reset_btn', '초기화']], left='웨이브 계정값', desc=['저장된 계정값은 ID/PW 변경 입력하더라도 바로 적용되지 않습니다. 계정변경시 초기화 시켜주세요.']) }}-->
     {{ macros.setting_select('quality', '기본 화질', [['2160p', '2160p'], ['1080p', '1080p'], ['720p', '720p'], ['480p', '480p'], ['360p', '360p']], col='3', value=arg['quality']) }}
     {{ macros.setting_input_text('save_path', '저장 폴더', value=arg['save_path'], desc='정상적으로 완료된 파일이 이동할 폴더 입니다. ') }}
     {{ macros.setting_input_int('max_pf_count', '허용 Packet Fail 수', value=arg['max_pf_count'], min='0', desc=['이 값보다 Packet Fail 횟수가 더 많으면 실패처리 합니다.', '0 : Packet Fail이 발생하면 바로 실패처리.', '-1 : 실패처리 하지 않음.']) }}
@@ -64,43 +60,6 @@ $("body").on('click', '#setting_save_btn', function(e){
   });
 });
 
-//로그인 인증
-/*
-$("#login").click(function(e) {
-  e.preventDefault(); 
-  $.ajax({
-    url: '/' + package_name + '/ajax/login',
-    type: "POST", 
-    cache: false,
-    data: {id:$("#id").val(), pw:$("#pw").val()},
-    dataType: "json",
-    success: function (list) {
-      document.getElementById("modal_title").innerHTML = "Login Result";
-      document.getElementById("modal_body").innerHTML = "<pre>"+JSON.stringify(list, null, 2) + "</pre>";
-      $("#large_modal").modal();
-    }
-  });
-});
-
-
-$("body").on('click', '#wavve_credential_reset_btn', function(e){
-  e.preventDefault();
-  $.ajax({
-    url: '/' + package_name + '/ajax/wavve_credential_reset',
-    type: "POST", 
-    cache: false,
-    data:{},
-    dataType: "json",
-    success: function (data) {
-      if (data) {
-        $.notify('<strong>초기화 하였습니다.</strong>', {type: 'success'});
-      } else {
-        $.notify('<strong>실패</strong><br>'+data.data, {type: 'warning'});
-      }
-    }
-  });
-});
-*/
 
 </script>    
 {% endblock %}

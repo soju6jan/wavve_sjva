@@ -45,7 +45,6 @@ class LogicRecent(object):
             save_path = ModelSetting.get('auto_save_path')
             auto_quality = ModelSetting.get('auto_quality')
             retry_user_abort = (ModelSetting.get('retry_user_abort') == 'True')
-            credential = ModelSetting.get('credential')
             qvod_download = (ModelSetting.get('qvod_download') == 'True')
             except_channel = ModelSetting.get('except_channel')
             except_program = ModelSetting.get('except_program')
@@ -109,13 +108,13 @@ class LogicRecent(object):
                                 continue
                         # URL때문에 DB에 있어도 다시 JSON을 받아야함.
                         for episode_try in range(3):
-                            json_data = Wavve.streaming(contenttype, contentid, auto_quality, credential)
+                            json_data = Wavve.streaming(contenttype, contentid, auto_quality)
                             try:
                                 tmp = json_data['playurl']
                             except:
                                 try:
                                     LogicBasic.login()
-                                    json_data = Wavve.streaming(contenttype, contentid, auto_quality, credential)
+                                    json_data = Wavve.streaming(contenttype, contentid, auto_quality)
                                 except:
                                     pass
 
