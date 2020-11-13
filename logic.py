@@ -93,7 +93,6 @@ class Logic(object):
             logger.debug('%s plugin_load', package_name)
             # DB 초기화
             Logic.db_init()
-            #LogicBasic.login()
 
             if ModelSetting.get('auto_start') == 'True':
                 Logic.scheduler_start()
@@ -147,17 +146,9 @@ class Logic(object):
             for key, value in req.form.items():
                 logger.debug('Key:%s Value:%s', key, value)
                 entity = db.session.query(ModelSetting).filter_by(key=key).with_for_update().first()
-                if key == 'id' or key == 'pw':
-                    if entity.value != value:
-                        flag_login = True
                 if entity is not None:
                     entity.value = value
             db.session.commit()                    
-            if flag_login:
-                if LogicBasic.login(force=True):
-                    return 1
-                else: 
-                    return 2
             return True
         except Exception as e: 
             logger.error('Exception:%s', e)

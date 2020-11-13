@@ -38,7 +38,6 @@ class LogicRecent(object):
     def scheduler_function():
         try:
             logger.debug('Wavve scheduler_function start..')
-            LogicBasic.login()
 
             page = int(ModelSetting.get('auto_page'))
             max_pf_count = ModelSetting.get('max_pf_count')
@@ -109,14 +108,7 @@ class LogicRecent(object):
                         # URL때문에 DB에 있어도 다시 JSON을 받아야함.
                         for episode_try in range(3):
                             json_data = Wavve.streaming(contenttype, contentid, auto_quality)
-                            try:
-                                tmp = json_data['playurl']
-                            except:
-                                try:
-                                    LogicBasic.login()
-                                    json_data = Wavve.streaming(contenttype, contentid, auto_quality)
-                                except:
-                                    pass
+                            tmp = json_data['playurl']
 
                             if json_data is None:
                                 logger.debug('episode fail.. %s', episode_try)

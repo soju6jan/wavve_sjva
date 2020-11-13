@@ -270,16 +270,6 @@ def ajax(sub):
                 code = request.form['code']
                 ret = Wavve.vod_contents_contentid(code)
                 ret = Wavve.streaming(ret['type'], ret['contentid'], '2160p')
-                try:
-                    tmp = ret['playurl']
-                except:
-                    try:
-                        from .logic_basic import LogicBasic
-                        LogicBasic.login()
-                        ret = Wavve.streaming(ret['type'], ret['contentid'], '2160p')
-                    except:
-                        pass
-
                 return jsonify(ret)
             except Exception as e: 
                 logger.error('Exception:%s', e)
