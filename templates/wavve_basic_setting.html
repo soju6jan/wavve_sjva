@@ -11,10 +11,6 @@
     {{ macros.setting_select('quality', '기본 화질', [['2160p', '2160p'], ['1080p', '1080p'], ['720p', '720p'], ['480p', '480p'], ['360p', '360p']], col='3', value=arg['quality']) }}
     {{ macros.setting_input_text('save_path', '저장 폴더', value=arg['save_path'], desc='정상적으로 완료된 파일이 이동할 폴더 입니다. ') }}
     {{ macros.setting_input_int('max_pf_count', '허용 Packet Fail 수', value=arg['max_pf_count'], min='0', desc=['이 값보다 Packet Fail 횟수가 더 많으면 실패처리 합니다.', '0 : Packet Fail이 발생하면 바로 실패처리.', '-1 : 실패처리 하지 않음.']) }}
-    <!--
-    {{ macros.setting_checkbox('use_proxy', 'Proxy 사용', value=arg['use_proxy'], desc=['일반적으로 외국에서 사용 불가능 합니다.', '국내 IP로 인식할 수 있는 Proxy가 있는 경우 입력합니다.']) }}
-    {{ macros.setting_input_text('proxy_url', 'Proxy URL', value=arg['proxy_url'], desc=None) }}
-    -->
     {{ macros.setting_button([['setting_save_btn', '저장']]) }}
   </form>
 </div> <!--전체-->

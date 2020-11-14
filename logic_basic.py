@@ -70,7 +70,6 @@ class LogicBasic(object):
                     quality = ModelSetting.get('quality')
                 data = Wavve.vod_contents_contentid(code)
                 contenttype = 'onairvod' if data['type'] == 'onair' else 'vod'
-                proxy = None
                 data2 = Wavve.streaming(contenttype, code, quality)
                 #logger.debug(data2)
                 data3 = {}
@@ -117,10 +116,7 @@ class LogicBasic(object):
             save_path = ModelSetting.get('save_path')
             max_pf_count = ModelSetting.get('max_pf_count')
             tmp = Wavve.get_prefer_url(url)
-            proxy = None
-            if ModelSetting.get_bool('use_proxy'):
-                proxy = ModelSetting.get('proxy_url')
-            f = ffmpeg.Ffmpeg(tmp, filename, plugin_id=-1, listener=LogicBasic.ffmpeg_listener, max_pf_count=max_pf_count, call_plugin='wavve_basic', save_path=save_path, proxy=proxy)
+            f = ffmpeg.Ffmpeg(tmp, filename, plugin_id=-1, listener=LogicBasic.ffmpeg_listener, max_pf_count=max_pf_count, call_plugin='wavve_basic', save_path=save_path, proxy=Wavve.get_proxy())
             #f.start_and_wait()
             f.start()
             #time.sleep(60)

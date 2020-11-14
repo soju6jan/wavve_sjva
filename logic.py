@@ -35,16 +35,11 @@ from .logic_program import LogicProgram
 class Logic(object):
     db_default = { 
         # 기본
-        'id' : '', 
-        'pw' : '', 
-        'credential' : '',
         'quality' : '1080p',
         'save_path' : os.path.join(path_data, 'download'),
         'max_pf_count' : '0',
         'max_retry_count' : '0',
         'recent_code' : '',
-        'use_proxy' : 'False',
-        'proxy_url' : '',
         
         # 최근
         'auto_interval' : '5', 
