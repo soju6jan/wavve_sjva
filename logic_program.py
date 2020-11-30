@@ -232,7 +232,7 @@ class LogicProgram(object):
                 ModelWavveProgram.update(entity)
         ###
 
-        import plugin
+        from . import plugin
         arg['status'] = str(arg['status'])
         plugin.socketio_callback('status', arg)
     
