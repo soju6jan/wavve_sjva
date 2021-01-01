@@ -257,7 +257,8 @@ class LogicRecent(object):
             #query = Episode.query.filter_by(call='auto')
             query = ModelWavveEpisode.query.filter((ModelWavveEpisode.call == 'auto') | (ModelWavveEpisode.call == None))
             if program is not None:
-                query = query.filter(ModelWavveEpisode.programtitle.like('%'+program+'%'))
+                #query = query.filter(ModelWavveEpisode.programtitle.like('%'+program+'%'))
+                query = query.filter(or_(ModelWavveEpisode.programtitle.like('%'+program+'%'), ModelWavveEpisode.channelname.like('%'+program+'%')))
             if option == 'completed':
                 query = query.filter_by(completed=True)
             elif option == 'uncompleted':
