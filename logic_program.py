@@ -18,7 +18,7 @@ from framework.job import Job
 from framework.util import Util
 
 # 패키지
-import plugin
+
 from .plugin import package_name, logger
 from .model import ModelSetting, ModelWavveProgram
 import framework.wavve.api as Wavve
@@ -180,6 +180,7 @@ class LogicProgram(object):
                     ### edit by lapis
                     ModelWavveProgram.delete(entity.episode_code, entity.quality)
                     ###
+                    from . import plugin
                     plugin.socketio_list_refresh()
                     continue
 
@@ -239,6 +240,7 @@ class LogicProgram(object):
 
     @staticmethod
     def program_auto_command(req):
+        from . import plugin
         try:
             command = req.form['command']
             entity_id = int(req.form['entity_id'])
