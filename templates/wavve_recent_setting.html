@@ -31,7 +31,7 @@
     {{ macros.setting_input_textarea('whitelist_program', '포함 프로그램', value=arg['whitelist_program'], desc=['이 곳에 있는 항목이 프로그램에 이름에 포함되어 있으면 다운로드합니다.', ', 또는 Enter로 구분']) }}
     {{ macros.setting_checkbox('whitelist_first_episode_download', '첫회 받기', value=arg['whitelist_first_episode_download'], desc='On : 포함 프로그램에 방송이 없어도 첫 에피소드를 다운로드합니다.') }}
     </div>
-    
+    {{ macros.setting_input_textarea('except_episode_keyword', '제외 에피소드 키워드', value=arg['except_episode_keyword'], desc=['이 곳에 있는 항목이 에피소드 번호 부분에 포함되어 있으면 제외합니다.', ', 또는 Enter로 구분']) }}
     {{ macros.setting_button([['global_setting_save_btn', '저장']]) }}
   </form>
   {{ macros.m_hr() }}

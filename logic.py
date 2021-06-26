@@ -49,6 +49,7 @@ class Logic(object):
         'qvod_download' : 'False',
         'except_channel' : '',
         'except_program' : '',
+        'except_episode_keyword' : '특집,바히인드,스페셜,선공개,티저,메이킹',
         'auto_page' : '2',
         'auto_save_path' : os.path.join(path_data, 'download'),
         'download_program_in_qvod' : '',
@@ -58,6 +59,7 @@ class Logic(object):
         'auto_count_ffmpeg' : '4',
         '2160_receive_1080' : 'False',
         '2160_wait_minute' : '100',
+
 
         # 방송별
         'program_auto_path' : os.path.join(path_data, 'download'),

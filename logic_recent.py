@@ -54,12 +54,14 @@ class LogicRecent(object):
 
             except_channels = [x.strip() for x in except_channel.replace('\n', ',').split(',')]
             except_programs = [x.strip().replace(' ', '') for x in except_program.replace('\n', ',').split(',')]
+            except_episode_keyword = [x.strip() for x in ModelSetting.get('except_episode_keyword').replace('\n', ',').split(',')]
             download_program_in_qvods = [x.strip().replace(' ', '') for x in download_program_in_qvod.replace('\n', ',').split(',')]
             whitelist_programs = [x.strip().replace(' ', '') for x in whitelist_program.replace('\n', ',').split(',')]
             Util.get_list_except_empty(except_channels)
             
             except_channels = Util.get_list_except_empty(except_channels)
             except_programs = Util.get_list_except_empty(except_programs)
+            except_episode_keyword = Util.get_list_except_empty(except_episode_keyword)
             download_program_in_qvods = Util.get_list_except_empty(download_program_in_qvods)
             whitelist_programs = Util.get_list_except_empty(whitelist_programs)
 
@@ -195,6 +197,13 @@ class LogicRecent(object):
                                     flag_download = False
                             if not flag_download and whitelist_first_episode_download and episode.episodenumber == '1':
                                 flag_download = True
+                        # 2021-06-26
+                        if flag_download and episode.episodenumber is not None and episode.episodenumber != '':
+                            for keyword in except_episode_keyword:
+                                if episode.episodenumber.find(keyword) != -1:
+                                    episode.etc_abort = 15
+                                    flag_download = False
+                                    break
 
                         #logger.debug(episode.quality)
                         if flag_download and episode.quality != auto_quality:
