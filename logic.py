@@ -49,7 +49,7 @@ class Logic(object):
         'qvod_download' : 'False',
         'except_channel' : '',
         'except_program' : '',
-        'except_episode_keyword' : '특집,바히인드,스페셜,선공개,티저,메이킹',
+        'except_episode_keyword' : '특집,비하인드,스페셜,선공개,티저,메이킹',
         'auto_page' : '2',
         'auto_save_path' : os.path.join(path_data, 'download'),
         'download_program_in_qvod' : '',
