@@ -13,7 +13,7 @@ from sqlalchemy.orm import backref
 # sjva 공용
 from framework import db, path_app_root, app
 from framework.util import Util
-from framework.common.plugin import get_model_setting, Logic, default_route
+from plugin import get_model_setting, Logic, default_route
 # 패키지
 from .plugin import logger, package_name
 #########################################################
